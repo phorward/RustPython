@@ -276,6 +276,15 @@ impl Document {
             .into_pyobject(vm);
         Ok(elem)
     }
+
+    #[pymethod]
+    fn createElement(&self, tag: PyStrRef, vm: &VirtualMachine) -> PyResult {
+        let elem = self
+        .doc
+        .create_element(tag.borrow_value());
+
+        Ok(Element{ elem: elem.unwrap() }.into_pyobject(vm))
+    }
 }
 
 #[pyclass(module = "browser", name)]
@@ -310,6 +319,14 @@ impl Element {
         self.elem
             .set_attribute(attr.borrow_value(), value.borrow_value())
             .map_err(|err| convert::js_py_typeerror(vm, err))
+    }
+
+    #[pymethod]
+    fn appendChild(&self, child: PyRef<Element>, vm: &VirtualMachine) -> PyResult<()> {
+        self.elem
+            .append_child(&*child.elem)
+            .map_err(|err| convert::js_py_typeerror(vm, err))?;
+        Ok(())
     }
 }
 
